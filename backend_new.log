@@ -1,0 +1,22 @@
+INFO:     Will watch for changes in these directories: ['/home/joash/oreonprojects/pythonbs/mealvouchertracker']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [144597] using WatchFiles
+INFO:     Started server process [144610]
+INFO:     Waiting for application startup.
+/etc/timezone is deprecated in some distros, and no longer reliable. tzlocal is ignoring it, and you can likely delete it.
+INFO:     Application startup complete.
+INFO:     192.168.1.13:46448 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     192.168.1.13:57326 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     192.168.1.13:52064 - "GET /api/vouchers HTTP/1.1" 200 OK
+INFO:     192.168.1.13:49290 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     192.168.1.13:49300 - "GET /api/vouchers HTTP/1.1" 200 OK
+INFO:     192.168.1.13:49300 - "OPTIONS /api/auth/verify-pin HTTP/1.1" 200 OK
+INFO:     192.168.1.13:49300 - "POST /api/auth/verify-pin HTTP/1.1" 200 OK
+INFO:     192.168.1.13:53562 - "GET /api/vouchers HTTP/1.1" 200 OK
+INFO:     192.168.1.13:56308 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     192.168.1.13:58780 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     192.168.1.13:53498 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     192.168.1.13:54778 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     192.168.1.13:56316 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     192.168.1.13:48110 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     192.168.1.13:44986 - "GET /api/employees HTTP/1.1" 200 OK

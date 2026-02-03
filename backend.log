@@ -1,0 +1,13 @@
+INFO:     Will watch for changes in these directories: ['/home/joash/oreonprojects/pythonbs/mealvouchertracker']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [143550] using WatchFiles
+INFO:     Started server process [143567]
+INFO:     Waiting for application startup.
+/etc/timezone is deprecated in some distros, and no longer reliable. tzlocal is ignoring it, and you can likely delete it.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:48382 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [143567]
+INFO:     Stopping reloader process [143550]
