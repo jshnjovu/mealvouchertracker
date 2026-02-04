@@ -1,0 +1,82 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run Backend Tests
+        run: |
+          cd backend
+          pytest
+
+      - name: Package Application
+        run: |
+          zip -r project.zip . -x "frontend/node_modules/*" "backend/.venv/*" "*/__pycache__/*" ".git/*" ".claude/*" "frontend/dist/*" "backend/.pytest_cache/*"
+
+      - name: Copy Files to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "project.zip"
+          target: "~/"
+
+      - name: Deploy on VM
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          ADMIN_PIN: ${{ secrets.ADMIN_PIN }}
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: VITE_API_URL,SMTP_USER,SMTP_PASSWORD,SMTP_HOST,SMTP_PORT,ADMIN_PIN
+          script: |
+            # Create .env file with secrets
+            echo "ADMIN_PIN=$ADMIN_PIN" > .env
+            echo "SMTP_USER=$SMTP_USER" >> .env
+            echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
+            echo "SMTP_HOST=$SMTP_HOST" >> .env
+            echo "SMTP_PORT=$SMTP_PORT" >> .env
+            echo "VITE_API_URL=$VITE_API_URL" >> .env
+
+            # Install unzip if not present
+            sudo apt-get update && sudo apt-get install -y unzip
+
+            # Unzip project (overwrite existing)
+            unzip -o ~/project.zip -d ~/app
+
+            # Navigate to app directory
+            cd ~/app
+
+            # Rebuild and restart containers
+            # Pass VITE_API_URL as a build argument to the frontend
+            sudo VITE_API_URL=$VITE_API_URL docker compose -f docker-compose.prod.yml up -d --build --force-recreate
+
+            # Clean up unused images to save space
+            sudo docker image prune -f

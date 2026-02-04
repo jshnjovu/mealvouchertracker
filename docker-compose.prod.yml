@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - DATABASE_URL=sqlite:///./mealvoucher.db
+      - ADMIN_PIN=1234
+      - REPORT_HOUR=18
+      - REPORT_MINUTE=0
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://34.27.147.116:8000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always

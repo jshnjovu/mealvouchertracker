@@ -1,4 +1,4 @@
-export const API_BASE = "http://192.168.1.13:8000";
+export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export type Employee = {
   employee_id: string;
