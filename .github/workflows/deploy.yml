@@ -69,14 +69,11 @@ jobs:
             sudo apt-get update && sudo apt-get install -y unzip
 
             # Unzip project (overwrite existing)
-            unzip -o ~/project.zip -d ~/app
-
-            # Navigate to app directory
-            cd ~/app
+            unzip -o ~/project.zip -d ~/
 
             # Rebuild and restart containers
             # Pass VITE_API_URL as a build argument to the frontend
-            sudo VITE_API_URL=$VITE_API_URL docker compose -f docker-compose.prod.yml up -d --build --force-recreate
+            sudo VITE_API_URL=$VITE_API_URL docker compose -f ~/docker-compose.prod.yml up -d --build --force-recreate
 
             # Clean up unused images to save space
             sudo docker image prune -f
