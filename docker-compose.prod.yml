@@ -6,9 +6,15 @@ services:
       context: ./backend
     environment:
       - DATABASE_URL=sqlite:///./mealvoucher.db
-      - ADMIN_PIN=1234
+      - ADMIN_PIN=${ADMIN_PIN}
       - REPORT_HOUR=18
       - REPORT_MINUTE=0
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM=${SMTP_USER}
+      - SMTP_TO=${SMTP_USER}
     volumes:
       - ./backend:/app
     ports:
@@ -19,9 +25,22 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: http://34.27.147.116:8000
+        # Now we point to the domain, assuming HTTPS is working
+        VITE_API_URL: https://mvt.redclief.com
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - backend
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
     restart: always
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    # Runs certbot renew every 12 hours
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
