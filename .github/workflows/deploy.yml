@@ -71,9 +71,8 @@ jobs:
             # Unzip project (overwrite existing)
             unzip -o ~/project.zip -d ~/
 
-            # Rebuild and restart containers
-            # Pass VITE_API_URL as a build argument to the frontend
-            sudo VITE_API_URL=$VITE_API_URL docker compose -f ~/docker-compose.prod.yml up -d --build --force-recreate
+            # Rebuild and restart containers with a forced project name
+            sudo VITE_API_URL=$VITE_API_URL docker compose -p meal-voucher -f ~/docker-compose.prod.yml up -d --build --force-recreate
 
-            # Clean up unused images to save space
+            # Clean up unused images
             sudo docker image prune -f
