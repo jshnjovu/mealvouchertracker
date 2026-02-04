@@ -20,10 +20,17 @@ The pipeline is defined in `.github/workflows/deploy.yml` and consists of:
 2.  **Packaging:** Creates a lightweight `project.zip` artifact, excluding development files.
 3.  **Deployment:**
     *   **SCP:** Securely copies the artifact to the VM.
-    *   **SSH:**Executes remote commands to:
-        *   Inject secrets into a production `.env` file.
-        *   Rebuild Docker containers with new code.
-        *   Prune old images to maintain disk hygiene.
+    *   **SSH:** Executes remote commands using a consistent project name (`-p meal-voucher`):
+        *   Injects secrets into a production `.env` file.
+        *   Rebuilds Docker containers with new code.
+        *   Prunes old images to maintain disk hygiene.
+
+### C. SSL & HTTPS (Let's Encrypt)
+*   **Nginx Proxy:** A custom Nginx configuration handles SSL termination and reverse proxies requests from `https://mvt.redclief.com/api/` to the backend.
+*   **Certbot Sidecar:** Automatically handles certificate issuance and renewal.
+*   **PWA Support:** HTTPS enables the Service Worker, allowing the application to be installed as a PWA.
+* Checking health is `https://mvt.redclief.com/api/health`
+
 
 ### C. Configuration Management
 *   **Frontend:** `VITE_API_URL` is injected at build time via Docker build arguments.

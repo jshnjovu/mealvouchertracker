@@ -10,6 +10,10 @@ export default defineConfig({
       strategies: "injectManifest",
       srcDir: "src",
       filename: "sw.ts",
+      devOptions: {
+        enabled: true,
+        type: "module"
+      },
       includeAssets: ["icons/icon-192.png", "icons/icon-512.png"],
       manifest: {
         name: "Meal Voucher Tracker",
