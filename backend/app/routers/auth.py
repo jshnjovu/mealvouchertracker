@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from ..schemas import PinVerifyRequest, PinVerifyResponse
 from ..services.auth import ADMIN_PIN
 
-router = APIRouter(prefix="/api/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/verify-pin", response_model=PinVerifyResponse)

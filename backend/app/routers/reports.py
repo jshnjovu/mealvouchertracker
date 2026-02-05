@@ -9,7 +9,7 @@ from ..database import get_db
 from ..services.auth import verify_admin_pin
 from ..services.reports import fetch_vouchers_for_date, generate_csv
 
-router = APIRouter(prefix="/api/reports", tags=["reports"])
+router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 @router.get("/daily", dependencies=[Depends(verify_admin_pin)])

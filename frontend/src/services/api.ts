@@ -14,6 +14,10 @@ export const API_BASE =
     ? "" 
     : (envApiUrl || "http://localhost:8000");
 
+if (typeof window !== "undefined") {
+  console.log(`[API] Base set to: "${API_BASE}" (VITE_API_URL: "${envApiUrl}", Origin: "${currentOrigin}")`);
+}
+
 export type Employee = {
   employee_id: string;
   name: string;
@@ -65,11 +69,18 @@ export async function checkOut(employee_id: string) {
 }
 
 export async function fetchVouchers(): Promise<VoucherEntry[]> {
-  const res = await fetch(`${API_BASE}/api/vouchers`);
-  if (!res.ok) {
-    throw new Error("Failed to fetch vouchers");
+  const url = `${API_BASE}/api/vouchers`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error(`[API] Failed to fetch vouchers from ${url}: ${res.status} ${res.statusText}`);
+      throw new Error("Failed to fetch vouchers");
+    }
+    return res.json();
+  } catch (error) {
+    console.error(`[API] Error fetching vouchers from ${url}:`, error);
+    throw error;
   }
-  return res.json();
 }
 
 export async function verifyPin(pin: string) {

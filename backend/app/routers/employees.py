@@ -11,7 +11,7 @@ from .. import crud, schemas
 from ..database import get_db
 from ..services.auth import verify_admin_pin
 
-router = APIRouter(prefix="/api/employees", tags=["employees"])
+router = APIRouter(prefix="/employees", tags=["employees"])
 
 
 @router.get("", response_model=List[schemas.EmployeeOut])

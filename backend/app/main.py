@@ -51,12 +51,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
-app.include_router(employees.router)
-app.include_router(vouchers.router)
-app.include_router(reports.router)
+# Health check on root
+@app.get("/health")
+def health_check_root():
+    return {"status": "ok"}
 
+# API Routers with common prefix
+app.include_router(auth.router, prefix="/api")
+app.include_router(employees.router, prefix="/api")
+app.include_router(vouchers.router, prefix="/api")
+app.include_router(reports.router, prefix="/api")
 
+# Explicit health check on /api/health as well for backward compatibility
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}

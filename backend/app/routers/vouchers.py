@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from .. import crud, schemas
 from ..database import get_db
 
-router = APIRouter(prefix="/api/vouchers", tags=["vouchers"])
+router = APIRouter(prefix="/vouchers", tags=["vouchers"])
 
 
 @router.get("", response_model=List[schemas.VoucherEntryOut])
