@@ -39,7 +39,10 @@ export async function cacheEmployees(records: EmployeeRecord[]) {
 }
 
 export async function getCachedEmployee(employee_id: string) {
-  return voucherDB.employees.get(employee_id);
+  // Case-insensitive lookup: search all employees and compare lowercased
+  const normalizedId = employee_id.toLowerCase();
+  const allEmployees = await voucherDB.employees.toArray();
+  return allEmployees.find(emp => emp.employee_id.toLowerCase() === normalizedId);
 }
 
 export async function queueVoucher(record: VoucherRecord) {
@@ -55,11 +58,14 @@ export async function markVoucherSynced(id: string) {
 }
 
 export async function findOpenVoucher(employee_id: string) {
-  return voucherDB.vouchers
-    .where("employee_id")
-    .equals(employee_id)
+  // Case-insensitive lookup: search all vouchers and compare lowercased
+  const normalizedId = employee_id.toLowerCase();
+  const allVouchers = await voucherDB.vouchers
     .filter((record) => !record.time_out)
-    .last();
+    .toArray();
+  return allVouchers
+    .filter(v => v.employee_id.toLowerCase() === normalizedId)
+    .sort((a, b) => new Date(b.time_in).getTime() - new Date(a.time_in).getTime())[0];
 }
 
 export async function updateVoucher(id: string, updates: Partial<VoucherRecord>) {

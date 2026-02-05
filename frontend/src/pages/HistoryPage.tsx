@@ -18,11 +18,7 @@ import {
 } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import { fetchDailyReport, fetchVouchers } from "../services/api";
-
-function formatTime(value?: string | null) {
-  if (!value) return "--";
-  return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
+import { formatTime } from "../utils/timeFormat";
 
 export default function HistoryPage() {
   const { data, isLoading, error } = useQuery({

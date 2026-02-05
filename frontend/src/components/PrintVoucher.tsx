@@ -1,16 +1,23 @@
 import { Button } from "@mui/material";
 import PrintIcon from "@mui/icons-material/Print";
 import { VoucherEntry } from "../services/api";
-
-function formatDate(value?: string | null) {
-  if (!value) return "--";
-  return new Date(value).toLocaleString();
-}
+import { formatTime } from "../utils/timeFormat";
 
 export default function PrintVoucher({ entry }: { entry: VoucherEntry }) {
   const handlePrint = () => {
     const printWindow = window.open("", "PRINT", "height=600,width=400");
     if (!printWindow) return;
+    
+    const timeOutHtml = entry.time_out 
+      ? `<div class="row">
+          <div class="label">Time Out</div>
+          <div class="value">${formatTime(entry.time_out)}</div>
+        </div>`
+      : `<div class="row">
+          <div class="label">Time Out</div>
+          <div class="value">--</div>
+        </div>`;
+    
     printWindow.document.write(`
       <html>
         <head>
@@ -30,17 +37,14 @@ export default function PrintVoucher({ entry }: { entry: VoucherEntry }) {
             <div class="value">${entry.employee_name} (${entry.employee_id})</div>
           </div>
           <div class="row">
-            <div class="label">Time In</div>
-            <div class="value">${formatDate(entry.time_in)}</div>
-          </div>
-          <div class="row">
-            <div class="label">Time Out</div>
-            <div class="value">${formatDate(entry.time_out)}</div>
-          </div>
-          <div class="row">
             <div class="label">Date</div>
             <div class="value">${entry.date}</div>
           </div>
+          <div class="row">
+            <div class="label">Time In</div>
+            <div class="value">${formatTime(entry.time_in)}</div>
+          </div>
+          ${timeOutHtml}
         </body>
       </html>
     `);

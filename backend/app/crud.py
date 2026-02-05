@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Iterable, Optional
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from . import models, schemas
+
+# GMT+3 timezone (Africa/Nairobi)
+GMT_PLUS_3 = timezone(timedelta(hours=3))
 
 
 # Employee operations
@@ -15,7 +19,10 @@ def list_employees(db: Session):
 
 
 def get_employee(db: Session, employee_id: str) -> Optional[models.Employee]:
-    return db.query(models.Employee).filter(models.Employee.employee_id == employee_id).first()
+    # Case-insensitive lookup: compare lowercased employee_id
+    return db.query(models.Employee).filter(
+        func.lower(models.Employee.employee_id) == func.lower(employee_id)
+    ).first()
 
 
 def create_employee(db: Session, data: schemas.EmployeeCreate) -> models.Employee:
@@ -45,10 +52,11 @@ def list_vouchers(db: Session, for_date: Optional[date] = None):
 
 
 def get_open_voucher(db: Session, employee_id: str) -> Optional[models.VoucherEntry]:
+    # Case-insensitive lookup: compare lowercased employee_id
     return (
         db.query(models.VoucherEntry)
         .filter(
-            models.VoucherEntry.employee_id == employee_id,
+            func.lower(models.VoucherEntry.employee_id) == func.lower(employee_id),
             models.VoucherEntry.time_out.is_(None),
         )
         .order_by(models.VoucherEntry.time_in.desc())
@@ -63,7 +71,7 @@ def check_in(db: Session, data: schemas.VoucherCheckIn) -> models.VoucherEntry:
     if not employee.is_active:
         raise ValueError("Employee inactive")
 
-    time_in = data.time_in or datetime.now(timezone.utc)
+    time_in = data.time_in or datetime.now(GMT_PLUS_3)
     voucher = models.VoucherEntry(
         employee_id=employee.employee_id,
         employee_name=data.employee_name or employee.name,
@@ -83,7 +91,7 @@ def check_out(db: Session, data: schemas.VoucherCheckOut) -> models.VoucherEntry
     voucher = get_open_voucher(db, data.employee_id)
     if not voucher:
         raise ValueError("No open voucher entry")
-    voucher.time_out = data.time_out or datetime.now(timezone.utc)
+    voucher.time_out = data.time_out or datetime.now(GMT_PLUS_3)
     db.commit()
     db.refresh(voucher)
     return voucher

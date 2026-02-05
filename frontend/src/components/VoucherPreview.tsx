@@ -2,11 +2,7 @@ import { Box, Card, CardContent, Chip, Divider, Stack, Typography } from "@mui/m
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { VoucherEntry } from "../services/api";
-
-function formatDate(value?: string | null) {
-  if (!value) return "--";
-  return new Date(value).toLocaleString();
-}
+import { formatTime } from "../utils/timeFormat";
 
 export default function VoucherPreview({ entry }: { entry: VoucherEntry }) {
   return (
@@ -48,7 +44,7 @@ export default function VoucherPreview({ entry }: { entry: VoucherEntry }) {
                 </Typography>
               </Stack>
               <Typography variant="body1" fontWeight={500}>
-                {formatDate(entry.time_in)}
+                {formatTime(entry.time_in)}
               </Typography>
             </Box>
             <Box sx={{ flex: 1 }}>
@@ -59,7 +55,7 @@ export default function VoucherPreview({ entry }: { entry: VoucherEntry }) {
                 </Typography>
               </Stack>
               <Typography variant="body1" fontWeight={500}>
-                {formatDate(entry.time_out)}
+                {formatTime(entry.time_out)}
               </Typography>
             </Box>
           </Stack>

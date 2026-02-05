@@ -44,21 +44,51 @@ export default function QrScanner({ onScan }: Props) {
       await scannerRef.current.start(
         { facingMode: "environment" },
         { 
-          fps: 10, 
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0
+          fps: 20, // Increased from 10 for better detection
+          qrbox: function(viewfinderWidth, viewfinderHeight) {
+            // Make qrbox responsive - use 80% of the smaller dimension
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const qrboxSize = Math.floor(minEdge * 0.8);
+            return {
+              width: qrboxSize,
+              height: qrboxSize
+            };
+          },
+          aspectRatio: 1.0,
+          supportedScanTypes: [], // Support all formats
+          verbose: true // Enable verbose logging for debugging
         },
         (decodedText) => {
+          // Success callback
+          console.log("QR Code detected:", decodedText);
           onScan(decodedText);
           stop().catch(() => undefined);
         },
-        () => undefined
+        (errorMessage) => {
+          // Error callback - log but don't show error for normal scanning attempts
+          // Only log if it's not a normal "not found" message
+          if (!errorMessage.includes("No QR code found")) {
+            console.debug("QR scan attempt:", errorMessage);
+          }
+        }
       );
       isRunningRef.current = true;
       setActive(true);
       setLoading(false);
     } catch (err) {
-      setError("Camera access failed. Please allow camera permissions.");
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error("QR Scanner error:", errorMessage);
+      
+      // Provide more specific error messages
+      if (errorMessage.includes("Permission") || errorMessage.includes("NotAllowedError")) {
+        setError("Camera access denied. Please allow camera permissions in your browser settings.");
+      } else if (errorMessage.includes("NotFoundError") || errorMessage.includes("DevicesNotFoundError")) {
+        setError("No camera found. Please ensure a camera is connected and try again.");
+      } else if (errorMessage.includes("NotReadableError") || errorMessage.includes("TrackStartError")) {
+        setError("Camera is already in use by another application. Please close other apps using the camera.");
+      } else {
+        setError(`Camera access failed: ${errorMessage}. Please check your camera permissions.`);
+      }
       setLoading(false);
       setActive(false);
     }

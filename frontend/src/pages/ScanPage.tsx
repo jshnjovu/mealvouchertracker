@@ -248,7 +248,7 @@ export default function ScanPage() {
                       No scans yet. Scan to generate a voucher preview.
                     </Alert>
                   )}
-                  {latest && latest.time_out && (
+                  {latest && (
                     <Fade in timeout={400}>
                       <Box>
                         <PrintVoucher entry={latest} />
