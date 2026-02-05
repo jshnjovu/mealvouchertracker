@@ -1,6 +1,18 @@
 // Use empty string for relative paths (when behind nginx proxy), fallback to localhost for dev
+// If VITE_API_URL is set to the current origin, use relative paths to go through nginx proxy
 const envApiUrl = import.meta.env.VITE_API_URL;
-export const API_BASE = envApiUrl === "" || envApiUrl === "/" ? "" : (envApiUrl || "http://localhost:8000");
+const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
+
+// Use relative paths if:
+// 1. VITE_API_URL is empty or "/"
+// 2. VITE_API_URL matches the current origin (same domain, so use nginx proxy)
+// Otherwise use the provided URL or fallback to localhost for dev
+export const API_BASE = 
+  envApiUrl === "" || 
+  envApiUrl === "/" || 
+  (envApiUrl && currentOrigin && envApiUrl.startsWith(currentOrigin))
+    ? "" 
+    : (envApiUrl || "http://localhost:8000");
 
 export type Employee = {
   employee_id: string;
