@@ -9,7 +9,9 @@ interface SyncEvent extends ExtendableEvent {
 
 precacheAndRoute(self.__WB_MANIFEST || []);
 
-const API_BASE = import.meta.env.VITE_API_URL || self.location.origin;
+// Use empty string for relative paths (when behind nginx proxy), fallback to origin for service worker
+const envApiUrl = import.meta.env.VITE_API_URL;
+const API_BASE = envApiUrl === "" || envApiUrl === "/" ? "" : (envApiUrl || self.location.origin);
 
 self.addEventListener("sync", (event: Event) => {
   const syncEvent = event as SyncEvent;

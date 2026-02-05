@@ -1,4 +1,6 @@
-export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Use empty string for relative paths (when behind nginx proxy), fallback to localhost for dev
+const envApiUrl = import.meta.env.VITE_API_URL;
+export const API_BASE = envApiUrl === "" || envApiUrl === "/" ? "" : (envApiUrl || "http://localhost:8000");
 
 export type Employee = {
   employee_id: string;
