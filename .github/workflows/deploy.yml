@@ -74,5 +74,46 @@ jobs:
             # Rebuild and restart containers with a forced project name
             sudo VITE_API_URL=$VITE_API_URL docker compose -p meal-voucher -f ~/docker-compose.prod.yml up -d --build --force-recreate
 
+            # Wait for containers to be ready
+            echo "Waiting for containers to start..."
+            sleep 10
+
+            # Verify backend is accessible
+            echo "Verifying backend health..."
+            MAX_RETRIES=30
+            RETRY_COUNT=0
+            BACKEND_HEALTHY=false
+
+            # Install curl on host if not available (for health check)
+            if ! command -v curl &> /dev/null; then
+              sudo apt-get update && sudo apt-get install -y curl
+            fi
+
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              # Test backend health from host (backend exposes port 8000)
+              if curl -f -s http://localhost:8000/api/health > /dev/null 2>&1; then
+                BACKEND_HEALTHY=true
+                echo "Backend health check passed!"
+                break
+              fi
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              echo "Backend health check attempt $RETRY_COUNT/$MAX_RETRIES failed, retrying in 2 seconds..."
+              sleep 2
+            done
+
+            # Check container status
+            echo "Container status:"
+            sudo docker compose -p meal-voucher -f ~/docker-compose.prod.yml ps
+
+            # Check backend logs if health check failed
+            if [ "$BACKEND_HEALTHY" = false ]; then
+              echo "ERROR: Backend health check failed after $MAX_RETRIES attempts"
+              echo "Backend logs:"
+              sudo docker compose -p meal-voucher -f ~/docker-compose.prod.yml logs backend --tail=50
+              echo "Frontend logs:"
+              sudo docker compose -p meal-voucher -f ~/docker-compose.prod.yml logs frontend --tail=50
+              exit 1
+            fi
+
             # Clean up unused images
             sudo docker image prune -f
