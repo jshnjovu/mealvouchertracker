@@ -71,33 +71,50 @@ jobs:
             # Unzip project (overwrite existing)
             unzip -o ~/project.zip -d ~/
 
+            # Check for SSL certificates
+            if [ ! -f "data/certbot/conf/live/mvt.redclief.com/fullchain.pem" ]; then
+              echo "WARNING: SSL certificates not found at data/certbot/conf/live/mvt.redclief.com/fullchain.pem"
+              echo "If this is a first-time setup, please run 'bash scripts/init-letsencrypt.sh' manually on the VM."
+            fi
+
             # Rebuild and restart containers with a forced project name
             sudo VITE_API_URL=$VITE_API_URL docker compose -p meal-voucher -f ~/docker-compose.prod.yml up -d --build --force-recreate
 
             # Wait for containers to be ready
             echo "Waiting for containers to start..."
-            sleep 10
+            sleep 15
 
             # Verify backend is accessible
             echo "Verifying backend health..."
             MAX_RETRIES=30
             RETRY_COUNT=0
             BACKEND_HEALTHY=false
+            FRONTEND_HEALTHY=false
 
-            # Install curl on host if not available (for health check)
+            # Install curl on host if not available
             if ! command -v curl &> /dev/null; then
               sudo apt-get update && sudo apt-get install -y curl
             fi
 
             while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-              # Test backend health from host (backend exposes port 8000)
+              # Test backend health via direct port
               if curl -f -s http://localhost:8000/api/health > /dev/null 2>&1; then
                 BACKEND_HEALTHY=true
                 echo "Backend health check passed!"
+              fi
+              
+              # Test frontend accessibility (Nginx)
+              if curl -f -s http://localhost > /dev/null 2>&1; then
+                FRONTEND_HEALTHY=true
+                echo "Frontend (Nginx) is reachable on port 80!"
+              fi
+
+              if [ "$BACKEND_HEALTHY" = true ] && [ "$FRONTEND_HEALTHY" = true ]; then
                 break
               fi
+
               RETRY_COUNT=$((RETRY_COUNT + 1))
-              echo "Backend health check attempt $RETRY_COUNT/$MAX_RETRIES failed, retrying in 2 seconds..."
+              echo "Health check attempt $RETRY_COUNT/$MAX_RETRIES: Backend=$BACKEND_HEALTHY, Frontend=$FRONTEND_HEALTHY. Retrying..."
               sleep 2
             done
 
@@ -105,14 +122,22 @@ jobs:
             echo "Container status:"
             sudo docker compose -p meal-voucher -f ~/docker-compose.prod.yml ps
 
+            if [ "$FRONTEND_HEALTHY" = false ]; then
+              echo "ERROR: Frontend is not reachable. This is likely due to missing SSL certificates or Nginx configuration error."
+              echo "Frontend logs:"
+              sudo docker compose -p meal-voucher -f ~/docker-compose.prod.yml logs frontend --tail=100
+            fi
+
             # Check backend logs if health check failed
             if [ "$BACKEND_HEALTHY" = false ]; then
               echo "ERROR: Backend health check failed after $MAX_RETRIES attempts"
               echo "Backend logs:"
-              sudo docker compose -p meal-voucher -f ~/docker-compose.prod.yml logs backend --tail=50
-              echo "Frontend logs:"
-              sudo docker compose -p meal-voucher -f ~/docker-compose.prod.yml logs frontend --tail=50
+              sudo docker compose -p meal-voucher -f ~/docker-compose.prod.yml logs backend --tail=100
               exit 1
+            fi
+
+            if [ "$FRONTEND_HEALTHY" = false ]; then
+               exit 1
             fi
 
             # Clean up unused images

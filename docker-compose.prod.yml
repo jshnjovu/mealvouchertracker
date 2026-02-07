@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
     environment:
-      - DATABASE_URL=sqlite:///./mealvoucher.db
+      - DATABASE_URL=sqlite:///./data/mealvoucher.db
       - ADMIN_PIN=${ADMIN_PIN}
       - REPORT_HOUR=18
       - REPORT_MINUTE=0
@@ -16,7 +16,7 @@ services:
       - SMTP_FROM=${SMTP_USER}
       - SMTP_TO=${SMTP_USER}
     volumes:
-      - ./backend:/app
+      - ./backend_data:/app/data
     ports:
       - "8000:8000"
     restart: always

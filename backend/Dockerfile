@@ -10,6 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 
+# Create data directory for SQLite persistence
+RUN mkdir -p /app/data
+
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
