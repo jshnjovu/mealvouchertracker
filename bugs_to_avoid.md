@@ -21,6 +21,7 @@ The frontend received `ERR_CONNECTION_REFUSED` when trying to reach the backend 
 ### Preventive Measures
 *   **Health Check Loop**: The CI/CD pipeline now includes a 30-retry health check against BOTH the direct backend port (8000) and the live frontend (port 80) before marking a deployment as successful.
 *   **SSL Path Consistency**: Ensure `nginx.conf` matches the directory structure created by the `init-letsencrypt.sh` script (e.g., avoid the common `-0001` suffix mismatch).
+*   **Optional SSL Includes**: Be careful with `include /etc/letsencrypt/options-ssl-nginx.conf;` in Nginx. If this file is missing (fresh setup), Nginx will fail to start. Keep it commented out until `init-letsencrypt.sh` has been run.
 *   **Consolidated Deployment**: Ensure the SSH user in GitHub Actions matches the primary operator user on the VM to maintain a single source of truth for files.
 *   **Automated .env**: Always generate the `.env` file from GitHub Secrets during deployment to prevent configuration drift.
 
