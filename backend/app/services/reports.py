@@ -42,7 +42,7 @@ def fetch_vouchers_for_date(db: Session, for_date: date):
     )
 
 
-def generate_csv(vouchers: Iterable[VoucherEntry], report_date: date) -> Path:
+def generate_csv(vouchers: Iterable[VoucherEntry], report_date: date, time_format: str | None = None) -> Path:
     filename = REPORT_DIR / f"voucher_report_{report_date.isoformat()}.csv"
     with filename.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
@@ -62,8 +62,8 @@ def generate_csv(vouchers: Iterable[VoucherEntry], report_date: date) -> Path:
                     entry.employee_id,
                     entry.employee_name,
                     entry.date.isoformat(),
-                    entry.time_in.isoformat(),
-                    entry.time_out.isoformat() if entry.time_out else "",
+                    entry.time_in.strftime(time_format) if time_format else entry.time_in.isoformat(),
+                    entry.time_out.strftime(time_format) if entry.time_out and time_format else (entry.time_out.isoformat() if entry.time_out else ""),
                     "yes" if entry.voucher_printed else "no",
                 ]
             )

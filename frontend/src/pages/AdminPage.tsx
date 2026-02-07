@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Alert,
   Box,
   Button,
   Chip,
+  FormControl,
   Grid,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   TextField,
   Typography
@@ -15,21 +19,61 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import DownloadIcon from "@mui/icons-material/Download";
 import {
+  Employee,
   fetchDailyReport,
   fetchEmployees,
   fetchVouchers,
   importEmployees,
   verifyPin
 } from "../services/api";
+import { ColumnDef } from "@tanstack/react-table";
+import DataTable from "../components/DataTable";
 
 export default function AdminPage() {
   const [pin, setPin] = useState("");
   const [verified, setVerified] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  const columns = useMemo<ColumnDef<Employee>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: "Name",
+        cell: (info) => (
+          <Box>
+            <Typography fontWeight={600}>{info.getValue() as string}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {info.row.original.employee_id}
+            </Typography>
+          </Box>
+        )
+      },
+      {
+        accessorKey: "department",
+        header: "Department",
+        cell: (info) => info.getValue() || "--"
+      },
+      {
+        accessorKey: "is_active",
+        header: "Status",
+        cell: (info) => (
+          <Chip
+            label={info.getValue() ? "Active" : "Inactive"}
+            color={info.getValue() ? "success" : "warning"}
+            variant="outlined"
+            size="small"
+          />
+        )
+      }
+    ],
+    []
+  );
+
   const [reportDate, setReportDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [timeFormat, setTimeFormat] = useState("");
   const [reportStatus, setReportStatus] = useState<
     { text: string; severity: "success" | "error" | "info" | "warning" } | null
   >(null);
@@ -88,7 +132,7 @@ export default function AdminPage() {
         });
         return;
       }
-      const blob = await fetchDailyReport(reportDate, pin);
+      const blob = await fetchDailyReport(reportDate, pin, timeFormat || undefined);
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -173,37 +217,16 @@ export default function AdminPage() {
           <Paper sx={{ p: 3 }}>
             <Stack spacing={2}>
               <Typography variant="h6">Employee Snapshot</Typography>
-              <Stack spacing={1}>
-                {data?.slice(0, 6).map((employee) => (
-                  <Box
-                    key={employee.employee_id}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      p: 1.5,
-                      borderRadius: 2,
-                      bgcolor: "grey.50"
-                    }}
-                  >
-                    <div>
-                      <Typography fontWeight={600}>{employee.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {employee.employee_id}
-                      </Typography>
-                    </div>
-                    <Chip
-                      label={employee.is_active ? "Active" : "Inactive"}
-                      color={employee.is_active ? "success" : "warning"}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </Box>
-                ))}
-                {!data?.length ? (
-                  <Alert severity="info">No employees loaded yet.</Alert>
-                ) : null}
-              </Stack>
+              {data && data.length > 0 ? (
+                <DataTable 
+                  data={data} 
+                  columns={columns} 
+                  searchPlaceholder="Search employees..." 
+                  initialSorting={[{ id: "name", desc: false }]}
+                />
+              ) : (
+                <Alert severity="info">No employees loaded yet.</Alert>
+              )}
             </Stack>
           </Paper>
         </Grid>
@@ -245,11 +268,29 @@ export default function AdminPage() {
               value={reportDate}
               onChange={(event) => setReportDate(event.target.value)}
               InputLabelProps={{ shrink: true }}
+              sx={{ flex: 1 }}
             />
+            <FormControl sx={{ flex: 1 }}>
+              <InputLabel id="admin-time-format-label">Time Format</InputLabel>
+              <Select
+                labelId="admin-time-format-label"
+                id="admin-time-format-select"
+                value={timeFormat}
+                label="Time Format"
+                onChange={(e) => setTimeFormat(e.target.value)}
+              >
+                <MenuItem value="">Default (ISO)</MenuItem>
+                <MenuItem value="%Y-%m-%d">Date only</MenuItem>
+                <MenuItem value="%H:%M">Time (H:M)</MenuItem>
+                <MenuItem value="%H:%M:%S">Time (H:M:S)</MenuItem>
+                <MenuItem value="%Y-%m-%d %H:%M">Date & Time</MenuItem>
+              </Select>
+            </FormControl>
             <Button
               variant="contained"
               startIcon={<DownloadIcon />}
               onClick={handleReportDownload}
+              sx={{ flex: 1 }}
             >
               Download Report
             </Button>

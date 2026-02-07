@@ -54,9 +54,7 @@ export default function QrScanner({ onScan }: Props) {
               height: qrboxSize
             };
           },
-          aspectRatio: 1.0,
-          supportedScanTypes: [], // Support all formats
-          verbose: true // Enable verbose logging for debugging
+          aspectRatio: 1.0
         },
         (decodedText) => {
           // Success callback

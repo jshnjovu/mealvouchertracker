@@ -24,7 +24,7 @@ export function useToast() {
     });
   }, []);
 
-  const handleClose = useCallback((event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = useCallback((_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === "clickaway") {
       return;
     }

@@ -103,7 +103,8 @@ const theme = createTheme({
     "0px 40px 80px rgba(0,0,0,0.44), 0px 20px 40px rgba(0,0,0,0.46)",
     "0px 42px 84px rgba(0,0,0,0.46), 0px 21px 42px rgba(0,0,0,0.48)",
     "0px 44px 88px rgba(0,0,0,0.48), 0px 22px 44px rgba(0,0,0,0.5)",
-    "0px 46px 92px rgba(0,0,0,0.5), 0px 23px 46px rgba(0,0,0,0.52)"
+    "0px 46px 92px rgba(0,0,0,0.5), 0px 23px 46px rgba(0,0,0,0.52)",
+    "0px 48px 96px rgba(0,0,0,0.54), 0px 24px 48px rgba(0,0,0,0.56)"
   ],
   transitions: {
     duration: {
@@ -133,13 +134,7 @@ const theme = createTheme({
           transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
           "&:hover": {
             transform: "translateY(-2px)",
-            boxShadow: 4
-          }
-        },
-        contained: {
-          boxShadow: 2,
-          "&:hover": {
-            boxShadow: 4
+            boxShadow: "0px 4px 8px rgba(0,0,0,0.1)"
           }
         }
       }
@@ -246,39 +241,6 @@ const theme = createTheme({
           "&:hover": {
             backgroundColor: "rgba(0, 0, 0, 0.02)",
             transform: "scale(1.01)"
-          }
-        }
-      }
-    },
-    MuiPickersPopper: {
-      styleOverrides: {
-        paper: {
-          borderRadius: 20,
-          boxShadow: 6,
-          "& .MuiPickersCalendarHeader-root": {
-            marginTop: 8
-          },
-          "& .MuiPickersDay-root": {
-            borderRadius: 12,
-            fontWeight: 500,
-            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-            "&:hover": {
-              transform: "scale(1.1)",
-              backgroundColor: "primary.light",
-              color: "white"
-            },
-            "&.Mui-selected": {
-              backgroundColor: "primary.main",
-              color: "white",
-              fontWeight: 600,
-              "&:hover": {
-                backgroundColor: "primary.dark"
-              }
-            }
-          },
-          "& .MuiPickersCalendarHeader-label": {
-            fontWeight: 600,
-            fontSize: "1rem"
           }
         }
       }

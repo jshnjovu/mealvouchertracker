@@ -13,9 +13,13 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 @router.get("/daily", dependencies=[Depends(verify_admin_pin)])
-def daily_report(report_date: date = Query(default_factory=date.today), db: Session = Depends(get_db)):
+def daily_report(
+    report_date: date = Query(default_factory=date.today),
+    time_format: str | None = Query(None),
+    db: Session = Depends(get_db)
+):
     vouchers = fetch_vouchers_for_date(db, report_date)
     if not vouchers:
         raise HTTPException(status_code=404, detail="No vouchers for date")
-    csv_path = generate_csv(vouchers, report_date)
+    csv_path = generate_csv(vouchers, report_date, time_format)
     return FileResponse(path=csv_path, filename=csv_path.name, media_type="text/csv")

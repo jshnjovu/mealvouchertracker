@@ -109,9 +109,14 @@ export async function importEmployees(file: File, pin: string) {
   return res.json() as Promise<{ created: number; updated: number }>;
 }
 
-export async function fetchDailyReport(reportDate: string, pin: string) {
+export async function fetchDailyReport(reportDate: string, pin: string, timeFormat?: string) {
+  let url = `${API_BASE}/api/reports/daily?report_date=${encodeURIComponent(reportDate)}`;
+  if (timeFormat) {
+    url += `&time_format=${encodeURIComponent(timeFormat)}`;
+  }
+  
   const res = await fetch(
-    `${API_BASE}/api/reports/daily?report_date=${encodeURIComponent(reportDate)}`,
+    url,
     {
       headers: { "X-Admin-PIN": pin }
     }

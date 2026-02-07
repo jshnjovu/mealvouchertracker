@@ -14,6 +14,7 @@
     "@mui/icons-material": "5.15.21",
     "@mui/material": "5.15.21",
     "@tanstack/react-query": "5.51.1",
+    "@tanstack/react-table": "8.17.3",
     "dexie": "4.0.7",
     "html5-qrcode": "2.3.8",
     "react": "18.3.1",

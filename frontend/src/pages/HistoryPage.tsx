@@ -1,30 +1,70 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Box,
   Button,
   Chip,
+  FormControl,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Typography
 } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
-import { fetchDailyReport, fetchVouchers } from "../services/api";
+import { fetchDailyReport, fetchVouchers, VoucherEntry } from "../services/api";
 import { formatTime } from "../utils/timeFormat";
+import DataTable from "../components/DataTable";
+import { ColumnDef } from "@tanstack/react-table";
 
 export default function HistoryPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["vouchers"],
     queryFn: fetchVouchers
   });
+
+  const columns = useMemo<ColumnDef<VoucherEntry>[]>(
+    () => [
+      {
+        accessorKey: "employee_name",
+        header: "Employee",
+        cell: (info) => (
+          <Box>
+            <Typography fontWeight={600}>{info.row.original.employee_name}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {info.row.original.employee_id}
+            </Typography>
+          </Box>
+        )
+      },
+      {
+        accessorKey: "time_in",
+        header: "Time In",
+        cell: (info) => formatTime(info.getValue() as string)
+      },
+      {
+        accessorKey: "time_out",
+        header: "Time Out",
+        cell: (info) => formatTime(info.getValue() as string)
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: (info) => (
+          <Chip
+            label={info.row.original.time_out ? "Complete" : "Open"}
+            color={info.row.original.time_out ? "success" : "warning"}
+            size="small"
+            variant="outlined"
+          />
+        )
+      }
+    ],
+    []
+  );
 
   const availableDates = Array.from(new Set((data ?? []).map((entry) => entry.date)))
     .filter(Boolean)
@@ -34,6 +74,7 @@ export default function HistoryPage() {
     new Date().toISOString().split("T")[0]
   );
   const [pin, setPin] = useState("");
+  const [timeFormat, setTimeFormat] = useState("");
   const [reportStatus, setReportStatus] = useState<
     { text: string; severity: "success" | "error" | "info" | "warning" } | null
   >(null);
@@ -48,7 +89,7 @@ export default function HistoryPage() {
         });
         return;
       }
-      const blob = await fetchDailyReport(reportDate, pin);
+      const blob = await fetchDailyReport(reportDate, pin, timeFormat || undefined);
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -84,40 +125,12 @@ export default function HistoryPage() {
           <Alert severity="info">No voucher activity yet.</Alert>
         ) : null}
         {data && data.length > 0 ? (
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Employee</TableCell>
-                  <TableCell>Time In</TableCell>
-                  <TableCell>Time Out</TableCell>
-                  <TableCell>Status</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>
-                      <Typography fontWeight={600}>{entry.employee_name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {entry.employee_id}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{formatTime(entry.time_in)}</TableCell>
-                    <TableCell>{formatTime(entry.time_out)}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={entry.time_out ? "Complete" : "Open"}
-                        color={entry.time_out ? "success" : "warning"}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <DataTable 
+            data={data} 
+            columns={columns} 
+            searchPlaceholder="Search employees..." 
+            initialSorting={[{ id: "time_in", desc: true }]}
+          />
         ) : null}
       </Paper>
 
@@ -159,6 +172,7 @@ export default function HistoryPage() {
               value={reportDate}
               onChange={(event) => setReportDate(event.target.value)}
               InputLabelProps={{ shrink: true }}
+              sx={{ flex: 1 }}
             />
             <TextField
               label="Admin PIN"
@@ -166,11 +180,29 @@ export default function HistoryPage() {
               value={pin}
               onChange={(event) => setPin(event.target.value)}
               placeholder="Enter admin PIN"
+              sx={{ flex: 1 }}
             />
+            <FormControl sx={{ flex: 1 }}>
+              <InputLabel id="history-time-format-label">Time Format</InputLabel>
+              <Select
+                labelId="history-time-format-label"
+                id="history-time-format-select"
+                value={timeFormat}
+                label="Time Format"
+                onChange={(e) => setTimeFormat(e.target.value)}
+              >
+                <MenuItem value="">Default (ISO)</MenuItem>
+                <MenuItem value="%Y-%m-%d">Date only</MenuItem>
+                <MenuItem value="%H:%M">Time (H:M)</MenuItem>
+                <MenuItem value="%H:%M:%S">Time (H:M:S)</MenuItem>
+                <MenuItem value="%Y-%m-%d %H:%M">Date & Time</MenuItem>
+              </Select>
+            </FormControl>
             <Button
               variant="contained"
               startIcon={<DownloadIcon />}
               onClick={handleReportDownload}
+              sx={{ flex: 1 }}
             >
               Download CSV
             </Button>
